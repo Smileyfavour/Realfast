@@ -1,8 +1,15 @@
 import { useEffect } from "react";
+import { useRouter } from "next/router";
 import  JobCard from "@/components/JobCard";
 import { jobsData } from "@/data/job-data";
 
 export default function AboutUs() {
+    const router = useRouter();
+
+    // setTimeout(()=>{
+    //     return router.push('/search')
+    // },3000)
+    console.log(router.query.keyword);
 
     useEffect(()=>{
         const rNums =[];
