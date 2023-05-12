@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { HiOutlineMenu } from 'react-icons/hi';
 import { AiOutlineClose,AiOutlineArrowRight } from 'react-icons/ai';
 import { useRouter } from 'next/router';
-import { useSession,signOut } from 'next-auth/react';
+import { useSession,signOut, signIn } from 'next-auth/react';
 
 export default function MainNav() {
     const [showMobileNav,setShowMobileNav] = useState(false);
@@ -96,7 +96,8 @@ export default function MainNav() {
                         ? (
                             <div className={navbarStyles.mobileBottomItems}>
                                 <Link href='/signin' className={navbarStyles.authBtn} onClick={() => setShowMobileNav(false)}>
-                                    <span className={navbarStyles.btnItems}>Sign in</span>
+                                    <span className={navbarStyles.btnItems}
+                                    onClick={()=>signIn()}>Sign in</span>
                                     <AiOutlineArrowRight className={navbarStyles.btnItems}/>
                                 </Link>
 
@@ -118,7 +119,8 @@ export default function MainNav() {
                                     setShowMobileNav(false);
                                     signOut()
                                 }}>
-                                    <span className={navbarStyles.btnItems}>Sign out</span>
+                                    <span className={navbarStyles.btnItems}
+                                    onClick={()=>signOut()}>Sign out</span>
                                     <AiOutlineArrowRight className={navbarStyles.btnItems}/>
                                 </button>
                             </div>
