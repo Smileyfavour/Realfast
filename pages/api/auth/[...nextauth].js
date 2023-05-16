@@ -10,7 +10,8 @@ import { FirestoreAdapter } from "@next-auth/firebase-adapter";
 import { cert } from 'firebase-admin/app';
 import  EmailProvider  from 'next-auth/providers/email';
 
-export const NextAuthOptions={
+export const NextAuthOptions = {
+    secret:process.env.NEXT_AUTH_SECRET,
     providers:[
         GoogleProvider({
             clientId:process.env.GOOGLE_CLIENT_ID,
@@ -33,7 +34,7 @@ export const NextAuthOptions={
           clientSecret:process.env.TWITTER_CLIENT_SECRET
         }),
         CredentialsProvider({
-            name:'Credentials',
+            name:'credentials',
             credentials:{},
             authorize(credentials,req) {
                 const {email,password} = credentials;
@@ -57,9 +58,9 @@ export const NextAuthOptions={
             }
         })
     ],
-    // pages:{
-    //     signIn:'/signin',
-    // },
+    pages:{
+        signIn:'/signin',
+    },
     adapter:FirestoreAdapter({
         credential:cert({
             projectId: process.env.FIREBASE_PROJECT_ID,

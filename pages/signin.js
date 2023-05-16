@@ -7,7 +7,7 @@ import * as yup from 'yup';
 import { auth } from "@/settings/firebase/firebase.setup";
 import { signInWithEmailAndPassword, onAuthStateChanged } from "firebase/auth";
 import { FcGoogle } from 'react-icons/fc';
-import { AiFillGithub } from 'react-icons/ai';
+import { AiFillGithub, AiOutlineUndo } from 'react-icons/ai';
 import { ImFacebook, ImTwitter, ImInstagram } from "react-icons/im";
 import { signIn } from 'next-auth/react';
 import { getServerSession } from "next-auth/next";
@@ -23,6 +23,7 @@ const fieldsSchema = yup.object().shape({
 
 export default function Signin () {
     const [screenHeight,setScreenHeight] = useState(0);
+    const [authChoice,setAuthChoice] =useState(false);
     const { uid,setUid,email,setEmail } = useContext(AppContext);
     // const { data:session } = useSession();
 
@@ -73,6 +74,15 @@ export default function Signin () {
                 <h2 className={styles.title}>Sign in to your RealFast account</h2>
 
                 <form autoComplete="off" onSubmit={handleSubmit}>
+                    <div className="flex justify-end">
+                        <p className="text-lg flex flex-row text-indigo-700 gap-3"
+                        onClick={()=> authChoice ? setAuthChoice(false) : setAuthChoice(true)}>
+                          <span> Sign in with {authChoice ? 'credentials' : 'email'} instead</span>
+                           <AiOutlineUndo className="text-indigo-500 text-2xl"/>
+                        </p>
+
+                    </div>
+
                     <div className={styles.inputBlockMain}>
                         <label className={styles.label}>Email address</label>
                         <input 
@@ -90,7 +100,7 @@ export default function Signin () {
                         }
                     </div>
 
-                    <div className={styles.inputBlockMain}>
+                    <div className={styles.inputBlockMain} style={{display:authChoice? 'none' : 'block'}}>
                         <label className={styles.label}>Password</label>
                         <input 
                         id="password"
@@ -109,11 +119,17 @@ export default function Signin () {
                     <button
                      type="submit" 
                      className={styles.submitBtn}
-                     onClick={()=>signIn('Credentials',{
-                        email:values.email,
-                        password:values.password,
-                        redirect:false
-                     })}>Sign in</button>
+                     onClick={()=>{
+                        if (authChoice) {
+                            signIn('email')
+                        } else{
+                            signIn('Credentials',{
+                                email:values.email,
+                                password:values.password,
+                                redirect:false
+                             })
+                        }
+                     }}>Sign in</button>
                 </form>
 
                 <p className="text-lg text-center my-2">OR, sign in with</p>
