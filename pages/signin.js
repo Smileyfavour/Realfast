@@ -12,7 +12,6 @@ import { ImFacebook, ImTwitter, ImInstagram } from "react-icons/im";
 import { signIn } from 'next-auth/react';
 import { getServerSession } from "next-auth/next";
 import { NextAuthOptions } from "./api/auth/[...nextauth]";
-// import { useSession } from "next-auth/react";
 
 
 //create a validation schema (validation rules)
@@ -35,7 +34,7 @@ export default function Signin () {
         signIn('google');
     }
 
-    // session ? router.push('/talents') : null;//done on client-side
+    session ? router.push('/talents') : null;//done on client-side
 
     useEffect(() => {
         setScreenHeight(window.innerHeight - 60);
@@ -158,21 +157,29 @@ export default function Signin () {
 export async function  getServerSideProps (context) {
     const session = await getServerSession(context.req,context.res,NextAuthOptions);
 
-    if (!session){
-        console.log('FROM SERVER-SIDE>>>> no session');
-    }else if (session){
-        console.log('FROM SERVER-SIDE',session);
-
+     // if there is an active session, redirect talent dashboard
+    if (session){
+       if (session.user.accountType == 'talent'){
         return{
             redirect:{
                 destination:'/talents',
                 permanent:false
             }
         }
+       } else if (session.user.accountType == 'org'){
+        return{
+            redirect:{
+                destination:'/org',
+                permanent:false
+            }
+        }
+       }
     }
 
     return{
-        props:{session,}
+        props:{
+            session:JSON.parse(JSON.stringify(session))
+        }
     }
 }
 
