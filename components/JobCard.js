@@ -2,6 +2,7 @@ import Image from "next/image"
 import Link from "next/link"
 
 
+
 export default function JobCard() {
    
     return (
@@ -30,6 +31,8 @@ export default function JobCard() {
               </div>
               <Link href="#" className={styles.apply}>View and Apply</Link>
             </div>
+          </div>
+          <div>
           </div>
        </div>
         

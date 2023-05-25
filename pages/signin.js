@@ -7,12 +7,11 @@ import * as yup from 'yup';
 import { auth } from "@/settings/firebase/firebase.setup";
 import { signInWithEmailAndPassword, onAuthStateChanged } from "firebase/auth";
 import { FcGoogle } from 'react-icons/fc';
-import { AiFillGithub, AiOutlineUndo } from 'react-icons/ai';
-import { ImFacebook, ImTwitter, ImInstagram } from "react-icons/im";
+import { AiFillGithub,AiOutlineUndo } from 'react-icons/ai';
+import { ImFacebook,ImTwitter} from "react-icons/im";
 import { signIn } from 'next-auth/react';
 import { getServerSession } from "next-auth/next";
-import { NextAuthOptions } from "./api/auth/[...nextauth]";
-
+import { nextAuthOptions } from "./api/auth/[...nextauth]";
 
 //create a validation schema (validation rules)
 const fieldsSchema = yup.object().shape({
@@ -22,11 +21,8 @@ const fieldsSchema = yup.object().shape({
 
 export default function Signin () {
     const [screenHeight,setScreenHeight] = useState(0);
-    const [authChoice,setAuthChoice] =useState(false);
+    const [authChoice,setAuthChoice] = useState(false);
     const { uid,setUid,email,setEmail } = useContext(AppContext);
-    // const { data:session } = useSession();
-
-    // console.log(session);
 
     const router = useRouter();
 
@@ -34,29 +30,27 @@ export default function Signin () {
         signIn('google');
     }
 
-    session ? router.push('/talents') : null;//done on client-side
-
     useEffect(() => {
         setScreenHeight(window.innerHeight - 60);
     },[]);
 
-        const {values,handleBlur,handleChange,errors,handleSubmit,touched } = useFormik({
-            validationSchema:fieldsSchema,
-            initialValues:{
-                email:'',
-                password:'',
+    const {values,handleBlur,handleChange,errors,handleSubmit,touched } = useFormik({
+        validationSchema:fieldsSchema,
+        initialValues:{
+            email:'',
+            password:'',
         },
         onSubmit:(values) => {
-            // signInWithEmailAndPassword(auth,values.email,values.password)
-            // .then(() => {
-            //     onAuthStateChanged(auth,(user) => {
-            //         setUid(user.uid);
-            //         setEmail(user.email);
-            //     });
+            signInWithEmailAndPassword(auth,values.email,values.password)
+            .then(() => {
+                onAuthStateChanged(auth,(user) => {
+                    setUid(user.uid);
+                    setEmail(user.email);
+                });
 
-            //     router.push('/talents/profile-update')
-            // })
-            // .catch(error => console.log(error));
+                router.push('/talents/profile-update')
+            })
+            .catch(error => console.log(error));
         } 
     });
 
@@ -71,15 +65,14 @@ export default function Signin () {
         <main className={styles.container} style={{height:`${screenHeight}px`}}>
             <div className={styles.wrapper}>
                 <h2 className={styles.title}>Sign in to your RealFast account</h2>
-
+                
                 <form autoComplete="off" onSubmit={handleSubmit}>
                     <div className="flex justify-end">
-                        <p className="text-lg flex flex-row text-indigo-700 gap-3"
-                        onClick={()=> authChoice ? setAuthChoice(false) : setAuthChoice(true)}>
-                          <span> Sign in with {authChoice ? 'credentials' : 'email'} instead</span>
-                           <AiOutlineUndo className="text-indigo-500 text-2xl"/>
+                        <p className="text-md text-indigo-700 flex flex-row gap-3"
+                        onClick={() => authChoice ? setAuthChoice(false) : setAuthChoice(true)}>
+                            <span>Sign in with {authChoice ? 'credentials' : 'email '} instead</span>
+                            <AiOutlineUndo className="text-indigo-500 text-2xl"/>
                         </p>
-
                     </div>
 
                     <div className={styles.inputBlockMain}>
@@ -99,7 +92,7 @@ export default function Signin () {
                         }
                     </div>
 
-                    <div className={styles.inputBlockMain} style={{display:authChoice? 'none' : 'block'}}>
+                    <div className={styles.inputBlockMain} style={{display:authChoice ? 'none' : 'block'}}>
                         <label className={styles.label}>Password</label>
                         <input 
                         id="password"
@@ -115,20 +108,20 @@ export default function Signin () {
                         }
                     </div>
 
-                    <button
-                     type="submit" 
-                     className={styles.submitBtn}
-                     onClick={()=>{
-                        if (authChoice) {
-                            signIn('email')
-                        } else{
-                            signIn('Credentials',{
+                    <button 
+                    type="submit" 
+                    className={styles.submitBtn}
+                    onClick={() => {
+                        if(authChoice) {
+                            signIn('email',{email:values.email,redirect:false})
+                        } else {
+                            signIn('credentials',{
                                 email:values.email,
                                 password:values.password,
-                                redirect:false
-                             })
+                                redirect:false,
+                            })
                         }
-                     }}>Sign in</button>
+                    }}>Sign in</button>
                 </form>
 
                 <p className="text-lg text-center my-2">OR, sign in with</p>
@@ -140,7 +133,7 @@ export default function Signin () {
 
                     <button 
                     className={styles.signinBtn}
-                    onClick={()=>signIn('github')} ><AiFillGithub/></button>
+                    ><AiFillGithub/></button>
                     <button  
                     className={styles.signinBtn}
                     onClick={()=>signIn('facebook')}><ImFacebook/></button>
@@ -154,30 +147,30 @@ export default function Signin () {
     )
 }
 
-export async function  getServerSideProps (context) {
-    const session = await getServerSession(context.req,context.res,NextAuthOptions);
+export async function getServerSideProps (context) {
+    const session = await getServerSession(context.req,context.res,nextAuthOptions);
 
-     // if there is an active session, redirect talent dashboard
-    if (session){
-       if (session.user.accountType == 'talent'){
-        return{
-            redirect:{
-                destination:'/talents',
-                permanent:false
+    //if there is an active session, redirect to talent dashboard
+    if(session){
+        if(session.user.accountType == 'talent') {
+            return {
+                redirect:{
+                    destination:'/talents',
+                    permanent:false,
+                }
+            }
+        } else if(session.user.accountType == 'org') {
+            return {
+                redirect:{
+                    destination:'/org',
+                    permanent:false,
+                }
             }
         }
-       } else if (session.user.accountType == 'org'){
-        return{
-            redirect:{
-                destination:'/org',
-                permanent:false
-            }
-        }
-       }
     }
 
-    return{
-        props:{
+    return {
+        props:{ 
             session:JSON.parse(JSON.stringify(session))
         }
     }
@@ -195,5 +188,5 @@ const styles = {
     submitBtn:'w-full bg-indigo-800 py-5 px-4 rounded-full text-lg text-white',
     formError:'text-xs',
     or:'w-full flex flex-row gap-2 justify-center',
-    signinBtn:'w-full px-3 py-4 flex justify-center rounded-full text-3xl border border-gray-300'
+    signinBtn:'w-full px-3 py-4 flex justify-center rounded-full text-3xl border border-gray-300 '
 }
